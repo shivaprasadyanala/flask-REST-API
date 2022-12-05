@@ -9,10 +9,12 @@ app = Flask(__name__)
 
 
 class StudentView(views.MethodView):
-    def index():
+
+    def get():
         try:
             users = student.query.all()
             student_schema = StudentSchema(many=True)
+            # serilazing users i.e, converting to json() format
             data = student_schema.dump(users)
             response = jsonify(
                 {"message": "data fetched succesfully", "data": data})
@@ -22,22 +24,22 @@ class StudentView(views.MethodView):
             response.status_code = 400
         return response
 
-    def create():
-        create_logic()
-
     # insert data into table.
 
-    def insert():
+    def post():
         try:
             if request.method == 'POST':
-                s = student(
-                    name=request.form['name'],
-                    age=request.form['age'],
-                    location=request.form['location']
-                )
-                db.session.add(s)
+                # s = student(
+                #     name=request.form['name'],
+                #     age=request.form['age'],
+                #     location=request.form['location']
+                # )
+                request_data = request.json
+                print(request_data)
+                student_object = StudentSchema.load(data=request_data)
+                db.session.add(student_object)
                 db.session.commit()
-                data = student_schema.dump(s)
+                # data = student_schema.dump(student_object)
                 response = jsonify(
                     {"message": "data inserted succusfully", "data": data})
         except Exception as error:
@@ -60,9 +62,9 @@ class StudentView(views.MethodView):
             response.status_code = 400
         return response
 
-    def update(id):
+    def put(id):
         try:
-            if request.method == "POST":
+            if request.method == "PUT":
                 name = request.form['name']
                 age = request.form['age']
                 location = request.form['location']
