@@ -10,7 +10,17 @@ app = Flask(__name__)
 
 class RegisterView(views.MethodView):
     def register():
-        return "register"
+        try:
+            if request.method == 'POST':
+                uname = request.form['username']
+                password = request.form['password']
+                email = request.form['email']
+                db.execute('insert into register(email,password,username) values (%s,%s,%s)', (
+                    uname, password, email,))
+        except Exception as error:
+            response = jsonify(
+                {"message": "error while registering data", "error": str(error)})
+            response.status_code = 400
 
     def create():
         create_logic()
