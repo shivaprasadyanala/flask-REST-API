@@ -4,9 +4,9 @@ app = Flask(__name__)
 ma = Marshmallow(app)
 
 
-class StudentSchema(ma.Schema):
+class RegisterSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "age", "location", "_links")
+        fields = ("id", "email", "password", "username", "_links")
 
     _links = ma.Hyperlinks(
         {"self": ma.URLFor("student.index"),

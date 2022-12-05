@@ -18,7 +18,8 @@ class StudentView(views.MethodView):
                 {"message": "data fetched succesfully", "data": data})
             response.status_code = 200
         except Exception as error:
-            response = jsonify({"message": "errror", "error": str(error)})
+            response = jsonify(
+                {"message": "error while fetching data", "error": str(error)})
             response.status_code = 400
         return response
 
@@ -86,4 +87,4 @@ class StudentView(views.MethodView):
         return response
 
 
-# app.add_url_rule('/',view_func=StudentView.as_view('index'))
+app.add_url_rule('/', view_func=StudentView.as_view('index'))
