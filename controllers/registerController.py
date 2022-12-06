@@ -2,8 +2,10 @@ from flask import request, render_template, redirect, url_for, Flask, jsonify, v
 from models.student import register, db
 from services.register_service import create_logic
 from schemas.register_schema import RegisterSchema
-from auth.jwt_auth import token_required
 import jwt
+from auth.auth_jwt import token_required
+import datetime
+
 
 register_schema = RegisterSchema()
 
@@ -48,11 +50,11 @@ class RegisterView(views.MethodView):
                 password = request.form['password']
 
                 user = register.query.filter_by(username=username).first()
-                print(user)
+                print(user.id)
                 if user is not None:
                     if user.username == username and user.password == password:
-                        token = jwt.encode(
-                            {'id': user.id}, app.config['SECRET_KEY'])
+                        token = jwt.encode({'id': user.id, 'exp': datetime.datetime.utcnow(
+                        ) + datetime.timedelta(minutes=30)}, 'secret', 'HS256')
                         response = jsonify(
                             {"message": "login succusfull", "token": token})
                     else:
