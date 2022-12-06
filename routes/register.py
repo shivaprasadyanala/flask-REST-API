@@ -6,4 +6,4 @@ reg_blueprint = Blueprint(
 
 reg_blueprint.route('/register', methods=['POST'])(RegisterView.register)
 reg_blueprint.route('/login', methods=['POST'])(RegisterView.login)
-reg_blueprint.route('/create', methods=['POST'])(RegisterView.create)
+# reg_blueprint.route('/create', methods=['POST'])(RegisterView.create)

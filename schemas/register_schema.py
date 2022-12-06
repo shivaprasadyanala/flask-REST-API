@@ -9,6 +9,6 @@ class RegisterSchema(ma.Schema):
         fields = ("id", "email", "password", "username", "_links")
 
     _links = ma.Hyperlinks(
-        {"self": ma.URLFor("student.index"),
-            "collection": ma.URLFor("student.index")}
+        {"self": ma.URLFor("register_blueprint.register"),
+            "collection": ma.URLFor("register_blueprint.register")}
     )
