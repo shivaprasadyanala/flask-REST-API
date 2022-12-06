@@ -2,6 +2,8 @@ from flask import request, render_template, redirect, url_for, Flask, jsonify, v
 from models.student import register, db
 from services.register_service import create_logic
 from schemas.register_schema import RegisterSchema
+from auth.jwt_auth import token_required
+import jwt
 
 register_schema = RegisterSchema()
 
@@ -49,7 +51,10 @@ class RegisterView(views.MethodView):
                 print(user)
                 if user is not None:
                     if user.username == username and user.password == password:
-                        response = jsonify({"message": "login succusfull"})
+                        token = jwt.encode(
+                            {'id': user.id}, app.config['SECRET_KEY'])
+                        response = jsonify(
+                            {"message": "login succusfull", "token": token})
                     else:
                         response = jsonify(
                             {"message": "incorrect username or password"})
@@ -59,4 +64,20 @@ class RegisterView(views.MethodView):
                 {"message": "error while logging in", "error": str(error)})
             response.status_code = 400
         return response
+
+    @token_required
+    def get_all_users(current_user):
+        try:
+            users = register.query.all()
+            register_schema = RegisterSchema(many=True)
+            data = register_schema.dump(users)
+            response = jsonify(
+                {"message": "users fetched succesfully", "data": data})
+        except Exception as error:
+            response = jsonify(
+                {"message": "error while logging in", "error": str(error)})
+            response.status_code = 400
+        return response
+
+
 # app.add_url_rule('/', view_func=RegisterView.as_view('index'))
