@@ -5,7 +5,6 @@ from schemas.schema import StudentSchema
 
 student_schema = StudentSchema()
 
-app = Flask(__name__)
 
 # test branch
 # test2 branch
@@ -32,19 +31,16 @@ class StudentView(views.MethodView):
     def post():
         try:
             if request.method == 'POST':
-                # s = student(
-                #     name=request.form['name'],
-                #     age=request.form['age'],
-                #     location=request.form['location']
-                # )
                 request_data = request.json
                 print(request_data)
-                student_object = StudentSchema.load(data=request_data)
+                student_object = student_schema.load(request_data)
                 db.session.add(student_object)
                 db.session.commit()
-                # data = student_schema.dump(student_object)
+                print(student_object)
+                data = student_schema.dump(student_object)
                 response = jsonify(
                     {"message": "data inserted succusfully", "data": data})
+                response.status_code = 201
         except Exception as error:
             response = jsonify(
                 {"message": "error in inserting data", "error": str(error)})
@@ -68,20 +64,22 @@ class StudentView(views.MethodView):
     def put(id):
         try:
             if request.method == "PUT":
-                name = request.form['name']
-                age = request.form['age']
-                location = request.form['location']
-                stu = student.query.filter_by(id=id).first()
+                # stu = student.query.filter_by(id=id).first()
+                # name = request.form['name'],
+                # age = request.form['age'],
+                # location = request.form['location']
+                # stu.name = name
+                # stu.age = age
+                # stu.location = location
+                request_data = request.json
+                print(request_data)
+                student_update = student.query.filter_by(id=id).first()
+                student_object = student_schema.load(
+                    request_data, instance=student_update, partial=True)
+                db.session.add(student_object)
 
-                name = request.form['name'],
-                age = request.form['age'],
-                location = request.form['location']
-                stu.name = name
-                stu.age = age
-                stu.location = location
-                db.session.add(stu)
                 db.session.commit()
-                data = student_schema.dump(stu)
+                data = student_schema.dump(student_object)
                 response = jsonify(
                     {"message": "data updated succusfully", "data": data})
         except Exception as error:
