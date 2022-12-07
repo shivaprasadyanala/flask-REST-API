@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 
 class RegisterView(views.MethodView):
-    def register():
+    def post():
         try:
             if request.method == 'POST':
                 register_object = register(
@@ -42,7 +42,9 @@ class RegisterView(views.MethodView):
     def create():
         create_logic()
 
-    def login():
+
+class LoginView(views.MethodView):
+    def post():
         try:
             if request.method == 'POST':
 
@@ -67,8 +69,8 @@ class RegisterView(views.MethodView):
             response.status_code = 400
         return response
 
-    @token_required
-    def get_all_users(current_user):
+    @ token_required
+    def get(current_user):
         try:
             users = register.query.all()
             register_schema = RegisterSchema(many=True)
