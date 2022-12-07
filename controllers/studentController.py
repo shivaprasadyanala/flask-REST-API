@@ -6,10 +6,6 @@ from schemas.schema import StudentSchema
 student_schema = StudentSchema()
 
 
-# test branch
-# test2 branch
-
-
 class StudentView(views.MethodView):
 
     def get():
