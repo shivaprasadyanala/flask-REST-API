@@ -5,42 +5,38 @@ from schemas.schema import StudentSchema
 
 student_schema = StudentSchema()
 
-app = Flask(__name__)
-
 
 class StudentView(views.MethodView):
-    def index():
+
+    def get():
         try:
             users = student.query.all()
             student_schema = StudentSchema(many=True)
+            # serilazing users i.e, converting to json() format
             data = student_schema.dump(users)
             response = jsonify(
                 {"message": "data fetched succesfully", "data": data})
             response.status_code = 200
         except Exception as error:
-            response = jsonify(
-                {"message": "error while fetching data", "error": str(error)})
+            response = jsonify({"message": "errror", "error": str(error)})
             response.status_code = 400
         return response
 
-    def create():
-        create_logic()
-
     # insert data into table.
 
-    def insert():
+    def post():
         try:
             if request.method == 'POST':
-                s = student(
-                    name=request.form['name'],
-                    age=request.form['age'],
-                    location=request.form['location']
-                )
-                db.session.add(s)
+                request_data = request.json
+                print(request_data)
+                student_object = student_schema.load(request_data)
+                db.session.add(student_object)
                 db.session.commit()
-                data = student_schema.dump(s)
+                print(student_object)
+                data = student_schema.dump(student_object)
                 response = jsonify(
                     {"message": "data inserted succusfully", "data": data})
+                response.status_code = 201
         except Exception as error:
             response = jsonify(
                 {"message": "error in inserting data", "error": str(error)})
@@ -61,23 +57,25 @@ class StudentView(views.MethodView):
             response.status_code = 400
         return response
 
-    def update(id):
+    def put(id):
         try:
-            if request.method == "POST":
-                name = request.form['name']
-                age = request.form['age']
-                location = request.form['location']
-                stu = student.query.filter_by(id=id).first()
+            if request.method == "PUT":
+                # stu = student.query.filter_by(id=id).first()
+                # name = request.form['name'],
+                # age = request.form['age'],
+                # location = request.form['location']
+                # stu.name = name
+                # stu.age = age
+                # stu.location = location
+                request_data = request.json
+                print(request_data)
+                student_update = student.query.filter_by(id=id).first()
+                student_object = student_schema.load(
+                    request_data, instance=student_update, partial=True)
+                db.session.add(student_object)
 
-                name = request.form['name'],
-                age = request.form['age'],
-                location = request.form['location']
-                stu.name = name
-                stu.age = age
-                stu.location = location
-                db.session.add(stu)
                 db.session.commit()
-                data = student_schema.dump(stu)
+                data = student_schema.dump(student_object)
                 response = jsonify(
                     {"message": "data updated succusfully", "data": data})
         except Exception as error:
@@ -87,4 +85,4 @@ class StudentView(views.MethodView):
         return response
 
 
-app.add_url_rule('/', view_func=StudentView.as_view('index'))
+# app.add_url_rule('/',view_func=StudentView.as_view('index'))

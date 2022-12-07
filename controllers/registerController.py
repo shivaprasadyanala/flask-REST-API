@@ -39,8 +39,13 @@ class RegisterView(views.MethodView):
             response.status_code = 400
         return response
 
-    def create():
-        create_logic()
+
+app.add_url_rule('/api/auth/register',
+                 view_func=RegisterView.as_view('post'), methods=['POST'])
+
+
+def create():
+    create_logic()
 
 
 class LoginView(views.MethodView):
@@ -84,4 +89,4 @@ class LoginView(views.MethodView):
         return response
 
 
-# app.add_url_rule('/', view_func=RegisterView.as_view('index'))
+app.add_url_rule('/api/auth/login', view_func=LoginView.as_view('post'))
