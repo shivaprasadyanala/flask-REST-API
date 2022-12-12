@@ -1,7 +1,7 @@
-from controllers.productController import ProductView
+from controllers.productController import ProductView, ProductDetailView
 
-from ..app import app
-from flask import Flask
-app = Flask(__name__)
-print("hi in product")
-app.add_url_rule('/product', 'product', ProductView.get_product)
+from . import app
+app.add_url_rule(
+    '/products', view_func=ProductView.as_view('get_products'))
+app.add_url_rule(
+    '/products/<id>', view_func=ProductDetailView.as_view('put_products'))

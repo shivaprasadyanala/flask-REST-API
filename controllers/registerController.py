@@ -5,6 +5,7 @@ from schemas.register_schema import RegisterSchema
 import jwt
 from auth.auth_jwt import token_required
 import datetime
+import os
 
 
 register_schema = RegisterSchema()
@@ -40,8 +41,8 @@ class RegisterView(views.MethodView):
         return response
 
 
-app.add_url_rule('/api/auth/register',
-                 view_func=RegisterView.as_view('post'), methods=['POST'])
+# app.add_url_rule('/api/auth/register',
+#                  view_func=RegisterView.as_view('post'), methods=['POST'])
 
 
 def create():
@@ -49,7 +50,7 @@ def create():
 
 
 class LoginView(views.MethodView):
-    def post():
+    def post2():
         try:
             if request.method == 'POST':
 
@@ -57,11 +58,13 @@ class LoginView(views.MethodView):
                 password = request.form['password']
 
                 user = register.query.filter_by(username=username).first()
-                print(user.id)
+
                 if user is not None:
                     if user.username == username and user.password == password:
+
                         token = jwt.encode({'id': user.id, 'exp': datetime.datetime.utcnow(
-                        ) + datetime.timedelta(minutes=30)}, 'secret', 'HS256')
+                        ) + datetime.timedelta(minutes=30)}, 'secret_key', 'HS256')
+
                         response = jsonify(
                             {"message": "login succusfull", "token": token})
                     else:
@@ -89,4 +92,4 @@ class LoginView(views.MethodView):
         return response
 
 
-app.add_url_rule('/api/auth/login', view_func=LoginView.as_view('post'))
+# app.add_url_rule('/api/auth/login', view_func=LoginView.as_view('post'))

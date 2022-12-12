@@ -11,9 +11,8 @@ def token_required(f):
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
         if not token:
-            return jsonify({"message": "Token is missing"})
+            return jsonify({"message": "No authentication credentials are provided"})
         try:
-            print("hi")
             data = jwt.decode(token, 'secret', algorithms=['HS256'])
             print(data)
             current_user = register.query.filter_by(id=data['id']).first()

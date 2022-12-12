@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+from . import db
 # creating a student table for inserting data into database
 
 

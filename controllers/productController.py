@@ -1,10 +1,16 @@
 from flask import request, render_template, redirect, url_for, Flask, jsonify, views
-from models.student import product, db
+from models.student import product
 from services.product_service import create_logic
 from schemas.product_schema import ProductSchema
 from werkzeug.utils import secure_filename
+from flask_babel import lazy_gettext as _
+from auth.auth_jwt import token_required
+from auth.authentication import is_authenticated
 import os
-app = Flask(__name__)
+from . import db
+
+# app = Flask(__name__)
+from . import app
 
 product_schema = ProductSchema()
 
@@ -12,13 +18,31 @@ UPLOAD_FOLDER = 'D:/study files/python/flask/curd using rest api/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
-class ProductView:
-    def get():
+class ProductView(views.MethodView):
+    # @ token_required
+    decorators = [is_authenticated]
+
+    def get(self):
         try:
-            users = product.query.all()
-            product_schema = ProductSchema(many=True)
+            # products = product.query.all()
+            # product_schema = ProductSchema(many=True)
             # serilazing users i.e, converting to json() format
-            data = product_schema.dump(users)
+            name = request.args.get('name')
+            pid = request.args.get('id')
+            title = request.args.get('title')
+            lprice = request.args.get('lprice')
+            gprice = request.args.get('gprice')
+            if name and pid and title:
+                follow_up_data = product.query.filter_by(
+                    pid=pid, name=name, title=title)
+            elif lprice and gprice:
+                print(lprice, gprice)
+                follow_up_data = product.query.filter(
+                    price <= lprice)
+            else:
+                follow_up_data = product.query.all()
+            data = product_schema.dump(follow_up_data, many=True)
+
             response = jsonify(
                 {"message": "data fetched succesfully", "data": data})
             response.status_code = 200
@@ -27,25 +51,7 @@ class ProductView:
             response.status_code = 400
         return response
 
-    def get_by_name(name):
-        try:
-            pro = product.query.filter_by(name=name).first()
-            # product_schema = ProductSchema(many=True)
-            # serilazing users i.e, converting to json() format
-            if pro is None:
-                mess = "product with name "+name+" is not found"
-                response = jsonify({"message": mess})
-            else:
-                data = product_schema.dump(pro)
-                response = jsonify(
-                    {"message": "data fetched succesfully", "data": data})
-                response.status_code = 200
-        except Exception as error:
-            response = jsonify({"message": "errror", "error": str(error)})
-            response.status_code = 400
-        return response
-
-    def post():
+    def post(self):
         try:
             f = request.files['image']
             url = f.filename
@@ -77,7 +83,28 @@ class ProductView:
         create_logic()
         return "table created"
 
-    def delete(id):
+
+class ProductDetailView(views.MethodView):
+    # @ token_required
+    decorators = [is_authenticated]
+
+    def get(self, id):
+        try:
+            pro = product.query.filter_by(pid=id).first()
+            if pro is None:
+                mess = "product with name "+name+" is not found"
+                response = jsonify({"message": mess})
+            else:
+                data = product_schema.dump(pro)
+                response = jsonify(
+                    {"message": "data fetched succesfully", "data": data})
+                response.status_code = 200
+        except Exception as error:
+            response = jsonify({"message": "errror", "error": str(error)})
+            response.status_code = 400
+        return response
+
+    def delete(self, id):
         if request.method == "DELETE":
             try:
 
@@ -95,7 +122,7 @@ class ProductView:
                 response.status_code = 400
             return response
 
-    def update(id):
+    def put(self, id):
         if request.method == "PUT":
             try:
                 f = request.files['image']
