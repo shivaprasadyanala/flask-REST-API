@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from flask_babel import lazy_gettext as _
 from auth.auth_jwt import token_required
 from auth.authentication import is_authenticated
+from sqlalchemy import and_, func
 import os
 from . import db
 
@@ -32,13 +33,21 @@ class ProductView(views.MethodView):
             title = request.args.get('title')
             lprice = request.args.get('lprice')
             gprice = request.args.get('gprice')
+            stdate = request.args.get('stdate')
+            endate = request.args.get('endate')
+            print(name)
+            print(lprice, gprice)
             if name and pid and title:
                 follow_up_data = product.query.filter_by(
                     pid=pid, name=name, title=title)
             elif lprice and gprice:
                 print(lprice, gprice)
                 follow_up_data = product.query.filter(
-                    price <= lprice)
+                    product.price >= lprice, product.price <= gprice)
+            elif stdate and endate:
+                print(stdate, endate)
+                follow_up_data = product.query.filter(and_(func.date
+                                                           (product.created_at) >= stdate, func.date(product.created_at) <= endate))
             else:
                 follow_up_data = product.query.all()
             data = product_schema.dump(follow_up_data, many=True)

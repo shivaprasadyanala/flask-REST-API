@@ -32,8 +32,8 @@ def authenticate_credentials(payload):
             _('Invalid Authorization header. No credentials provided.'))
     else:
         user = register.query.filter_by(id=user_id)
-        print("hi in 26")
-        print(user)
+        # print("hi in 26")
+        # print(user)
         # fetch the user data from the database.
         if not user:
             raise Exception(_('Invalid Authorization header. No user found.'))
@@ -99,7 +99,7 @@ def is_authenticated(func):
     def wrapper(*args, **kwargs):
         headers = request.headers
         token = get_authorization_header(headers)
-        print(token)
+        # print(token)
         if token:
             try:
                 user, permissions = authenticate(token)
