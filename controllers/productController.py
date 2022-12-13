@@ -1,3 +1,4 @@
+from . import app
 from flask import request, render_template, redirect, url_for, Flask, jsonify, views
 from models.student import product
 from services.product_service import create_logic
@@ -9,9 +10,9 @@ from auth.authentication import is_authenticated
 from sqlalchemy import and_, func
 import os
 from . import db
-
+import logging
+logging.basicConfig(format='line no :%(lineno)d-%(message)s')
 # app = Flask(__name__)
-from . import app
 
 product_schema = ProductSchema()
 
@@ -35,8 +36,8 @@ class ProductView(views.MethodView):
             gprice = request.args.get('gprice')
             stdate = request.args.get('stdate')
             endate = request.args.get('endate')
-            print(name)
-            print(lprice, gprice)
+            # print(name)
+            # print(lprice, gprice)
             if name and pid and title:
                 follow_up_data = product.query.filter_by(
                     pid=pid, name=name, title=title)
@@ -56,6 +57,7 @@ class ProductView(views.MethodView):
                 {"message": "data fetched succesfully", "data": data})
             response.status_code = 200
         except Exception as error:
+            logging.exception('error in data fetching')
             response = jsonify({"message": "errror", "error": str(error)})
             response.status_code = 400
         return response
@@ -71,6 +73,7 @@ class ProductView(views.MethodView):
                 "name": request.form['name'],
                 "title": request.form['title'],
                 "description": request.form['description'],
+
                 "price": request.form['price'],
                 "image": url
             }
@@ -82,6 +85,7 @@ class ProductView(views.MethodView):
                 {"message": "data inserted succusfully", "data": data})
             response.status_code = 201
         except Exception as error:
+            logging.exception('error in data inserting')
             response = jsonify(
                 {"message": "error in inserting data", "error": str(error)})
             response.status_code = 400
@@ -109,6 +113,7 @@ class ProductDetailView(views.MethodView):
                     {"message": "data fetched succesfully", "data": data})
                 response.status_code = 200
         except Exception as error:
+            logging.exception('error in data fetching')
             response = jsonify({"message": "errror", "error": str(error)})
             response.status_code = 400
         return response
@@ -126,6 +131,7 @@ class ProductDetailView(views.MethodView):
                 response = jsonify(
                     {"message": "data deleted succusfully", "data": data})
             except Exception as error:
+                logging.exception('error in data deleting')
                 response = jsonify(
                     {"message": "error in deleting data", "error": str(error)})
                 response.status_code = 400
@@ -153,6 +159,7 @@ class ProductDetailView(views.MethodView):
                 response = jsonify(
                     {"message": "data updated succusfully", "data": data})
             except Exception as error:
+                logging.exception('error in data editing')
                 response = jsonify(
                     {"message": "error in updating data", "error": str(error)})
                 response.status_code = 400
