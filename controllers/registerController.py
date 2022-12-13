@@ -32,7 +32,6 @@ class RegisterView(views.MethodView):
                 # rec_emil = "shivaprasadysp99@gmail.com"
 
                 rec_emil = request.form['email']
-                # password = "lsyzetmlkptpxhse"
                 password = os.environ.get('EMAILPASS')
                 symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$&@?<>~!%#"
                 hasUpper = False
