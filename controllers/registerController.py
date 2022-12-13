@@ -1,3 +1,5 @@
+import random
+import re
 from flask import request, render_template, redirect, url_for, Flask, jsonify, views
 from models.student import register, db
 from services.register_service import create_logic
@@ -6,6 +8,9 @@ import jwt
 from auth.auth_jwt import token_required
 import datetime
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 register_schema = RegisterSchema()
@@ -22,10 +27,64 @@ class RegisterView(views.MethodView):
                     password=request.form['password'],
                     username=request.form['username']
                 )
-                print(register_object)
+
+                my_email = "shivaprasadyanala@gmail.com"
+                # rec_emil = "shivaprasadysp99@gmail.com"
+
+                rec_emil = request.form['email']
+                # password = "lsyzetmlkptpxhse"
+                password = os.environ.get('EMAILPASS')
+                symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$&@?<>~!%#"
+                hasUpper = False
+                hasLower = False
+                hasDigit = False
+                hasSpecial = False
+
+                secpass = ""
+                passwordlength = 8
+                while True:
+                    randpass = ""
+                    for x in range(passwordlength):
+                        ch = random.choice(symbols)
+                        # print(ch.upper(),ch.lower())
+                        if (ch.isupper()):
+                            hasUpper = True
+                        elif (ch.islower()):
+                            hasLower = True
+                        elif (ch.isdigit()):
+                            hasDigit = True
+                        else:
+                            hasSpecial = True
+                        randpass += ch
+                    if hasUpper and hasLower and hasDigit and hasSpecial:
+                        print(randpass)
+                        secpass = randpass
+                        break
+
+                msg = MIMEMultipart()
+                # Add Subject
+                subject = "secret password for login"
+
+                msg['Subject'] = subject
+
+                # Add text contents
+                text = "the secret password is: "+secpass
+                msg.attach(MIMEText(text))
+                message = msg
+
+                with smtplib.SMTP(host="smtp.gmail.com", port=587) as connection:
+                    connection.starttls()
+                    connection.login(user=my_email, password=password)
+                    connection.sendmail(
+                        from_addr=my_email,
+                        to_addrs=rec_emil,
+                        msg=message.as_string()
+                    )
+
+                # print(register_object)
                 user = register.query.filter_by(
                     username=register_object.username).first()
-                print(user)
+                # print(user)
                 if user is None:
                     db.session.add(register_object)
                     db.session.commit()
