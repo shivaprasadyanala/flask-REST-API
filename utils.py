@@ -24,33 +24,6 @@ def sendmail(email):
     password = os.environ.get('EMAILPASS')
     msg = Message('Hello', sender=os.environ.get('EMAIL_HOST_USER'),
                   recipients=[email])
-    # symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$&@?<>~!%#"
-    # hasUpper = False
-    # hasLower = False
-    # hasDigit = False
-    # hasSpecial = False
-
-    # secpass = ""
-
-    # # msg.body = "Hello Flask message sent from Flask-Mail"
-    # while True:
-    #     randpass = ""
-    #     for x in range(8):
-    #         ch = random.choice(symbols)
-    #         # print(ch.upper(),ch.lower())
-    #         if (ch.isupper()):
-    #             hasUpper = True
-    #         elif (ch.islower()):
-    #             hasLower = True
-    #         elif (ch.isdigit()):
-    #             hasDigit = True
-    #         else:
-    #             hasSpecial = True
-    #         randpass += ch
-    #     if hasUpper and hasLower and hasDigit and hasSpecial:
-    #         print(randpass)
-    #         secpass = randpass
-    #         break
     secret_password = get_random_password()
     print(secret_password)
     msg.body = "hello this is a secret key: "+secret_password

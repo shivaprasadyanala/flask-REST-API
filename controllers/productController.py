@@ -77,19 +77,37 @@ class ProductView(views.MethodView):
                 "price": request.form['price'],
                 "image": url
             }
-            item_obj = product_schema.load(req_obj)
-            db.session.add(item_obj)
-            db.session.commit()
-            data = product_schema.dump(item_obj)
-            response = jsonify(
-                {"message": "data inserted succusfully", "data": data})
-            response.status_code = 201
+
+            schema_errors = product_schema.validate(req_obj)
+            print(schema_errors)
+            if schema_errors:
+
+                response = jsonify(schema_errors)
+                response.status_code = 400
+                return response
+            name = product.query.filter_by(
+                name=req_obj['name']).first()
+            title = product.query.filter_by(
+                title=req_obj['title']).first()
+            if name is None:
+                if title is None:
+                    item_obj = product_schema.load(req_obj)
+                    db.session.add(item_obj)
+                    db.session.commit()
+                    data = product_schema.dump(req_obj)
+                    response = jsonify(
+                        {"message": "data inserted succusfully", "data": data})
+                    response.status_code = 201
+                else:
+                    response = jsonify({"message": "title is already taken"})
+            else:
+                response = jsonify({"message": "name is already taken"})
+
         except Exception as error:
             logging.exception('error in data inserting')
             response = jsonify(
                 {"message": "error in inserting data", "error": str(error)})
             response.status_code = 400
-        # print(url)
         return response
 
     def create():
@@ -119,38 +137,37 @@ class ProductDetailView(views.MethodView):
         return response
 
     def delete(self, id):
-        if request.method == "DELETE":
-            try:
-
-                print(id)
-                product_delete = product.query.filter_by(pid=id).first()
-
+        try:
+            product_delete = product.query.filter_by(pid=id).first()
+            if product_delete is not None:
                 db.session.delete(product_delete)
                 db.session.commit()
                 data = product_schema.dump(product_delete)
                 response = jsonify(
                     {"message": "data deleted succusfully", "data": data})
-            except Exception as error:
-                logging.exception('error in data deleting')
-                response = jsonify(
-                    {"message": "error in deleting data", "error": str(error)})
-                response.status_code = 400
-            return response
+            else:
+                response = jsonify({"message": "The id does not exist"})
+        except Exception as error:
+            logging.exception('error in data deleting')
+            response = jsonify(
+                {"message": "error in deleting data", "error": str(error)})
+            response.status_code = 400
+        return response
 
     def put(self, id):
-        if request.method == "PUT":
-            try:
-                f = request.files['image']
-                url = f.filename
-                f.save(os.path.join(app.config['UPLOAD_FOLDER'], url))
-                req_obj = {
-                    "name": request.form['name'],
-                    "title": request.form['title'],
-                    "description": request.form['description'],
-                    "price": request.form['price'],
-                    "image": url
-                }
-                product_update = product.query.filter_by(pid=id).first()
+        try:
+            f = request.files['image']
+            url = f.filename
+            f.save(os.path.join(app.config['UPLOAD_FOLDER'], url))
+            req_obj = {
+                "name": request.form['name'],
+                "title": request.form['title'],
+                "description": request.form['description'],
+                "price": request.form['price'],
+                "image": url
+            }
+            product_update = product.query.filter_by(pid=id).first()
+            if product_update is not None:
                 product_object = product_schema.load(
                     req_obj, instance=product_update, partial=True)
                 db.session.add(product_object)
@@ -158,9 +175,11 @@ class ProductDetailView(views.MethodView):
                 data = product_schema.dump(product_object)
                 response = jsonify(
                     {"message": "data updated succusfully", "data": data})
-            except Exception as error:
-                logging.exception('error in data editing')
-                response = jsonify(
-                    {"message": "error in updating data", "error": str(error)})
-                response.status_code = 400
-            return response
+            else:
+                response = jsonify({"message": "The id does not exist"})
+        except Exception as error:
+            logging.exception('error in data editing')
+            response = jsonify(
+                {"message": "error in updating data", "error": str(error)})
+            response.status_code = 400
+        return response

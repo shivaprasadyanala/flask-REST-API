@@ -13,35 +13,64 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import logging
+from email_validator import validate_email
+logging.basicConfig(format='line no :%(lineno)d-%(message)s')
 
 
 register_schema = RegisterSchema()
 
 
 class RegisterView(views.MethodView):
-    def post():
+    def post(self):
         try:
 
-            register_object = register(
-                email=request.form['email'],
-                password=request.form['password'],
-                username=request.form['username']
-            )
-
+            # register_object = register(
+            #     email=request.form['email'],
+            #     password=request.form['password'],
+            #     username=request.form['username']
+            # )
+            register_object = {
+                "email": request.form['email'],
+                "password": request.form['password'],
+                "username": request.form['username']
+            }
+            schema_errors = register_schema.validate(register_object)
+            # print(schema_errors)
+            if schema_errors:
+                response = jsonify(schema_errors)
+                response.status_code = 400
+                return response
             rec_emil = request.form['email']
-            sendmail(rec_emil)
+            validation = validate_email(rec_emil, check_deliverability=True)
+            print(validation)
+            rec_emil = validation.email
+            print(rec_emil)
+            print(register_object['username'])
             user = register.query.filter_by(
-                username=register_object.username).first()
-            # print(user)
+                username=register_object['username']).first()
+            email = register.query.filter_by(
+                email=register_object['email']).first()
+
+            print(user)
+            print(email)
+
             if user is None:
-                db.session.add(register_object)
-                db.session.commit()
-                data = register_schema.dump(register_object)
-                response = jsonify(
-                    {"message": "data inserted succusfully", "data": data})
+                if email is None:
+                    item_obj = register_schema.load(register_object)
+                    db.session.add(item_obj)
+                    db.session.commit()
+                    sendmail(rec_emil)
+                    data = register_schema.dump(register_object)
+                    response = jsonify(
+                        {"message": "data inserted succusfully", "data": data})
+                else:
+                    response = jsonify({"message": "user is already register"})
             else:
                 response = jsonify({"message": "user is already register"})
+
         except Exception as error:
+            logging.exception('error in registering the user')
             response = jsonify(
                 {"message": "error while registering data", "error": str(error)})
             response.status_code = 400
@@ -57,7 +86,7 @@ def create():
 
 
 class LoginView(views.MethodView):
-    def post2():
+    def post(self):
         try:
 
             username = request.form['username']
@@ -78,6 +107,7 @@ class LoginView(views.MethodView):
                         {"message": "incorrect username or password"})
 
         except Exception as error:
+            logging.exception('error in loggin in')
             response = jsonify(
                 {"message": "error while logging in", "error": str(error)})
             response.status_code = 400
